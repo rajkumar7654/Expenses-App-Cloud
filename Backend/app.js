@@ -1,16 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
-const https = require('https');
-const fs = require('fs');
+const path = require('path');
 
 const app = express();
 
-const port = 3000;
-
 // importing routes
 
-const path = require('path');
 const cors = require('cors');
 
 const loginRoute = require('./routes/loginRoute');
@@ -45,22 +41,8 @@ app.use('/payment', paymentRoute);
 app.use('/user', loginRoute);
 app.use('/forgetpassword', forgetPasswordRoute);
 
-
-
-// SSL / HTTPS Configuration
-const sslOptions = {
-    key: fs.readFileSync(
-        path.join(__dirname, 'cert', 'server.key')
-    ),
-
-    cert: fs.readFileSync(
-        path.join(__dirname, 'cert', 'server.crt')
-    )
-};
-
-
 // Database Connection
-sequelize.sync({ alter: true }).then(async () => {
+sequelize.sync({ force: false }).then(async () => {
 
     // Update existing users' totalExpenses on startup
     try {
@@ -108,16 +90,6 @@ sequelize.sync({ alter: true }).then(async () => {
         );
     }
 
-
-    // Start HTTPS Server
-    https.createServer(sslOptions, app).listen(port, () => {
-
-        console.log(
-            `HTTPS Server running at https://localhost:${port}`
-        );
-
-    });
-
 }).catch((error) => {
 
     console.error(
@@ -126,3 +98,14 @@ sequelize.sync({ alter: true }).then(async () => {
     );
 
 });
+
+// Start server for local development (not for Vercel)
+if (require.main === module) {
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+}
+
+// Export for Vercel
+module.exports = app;
