@@ -1,7 +1,7 @@
 
 const signUpForm = document.getElementById("signupForm");
 
-const API = "http://localhost:3000";
+const API = "";
 
 signUpForm.addEventListener("submit", async (e) => {
     e.preventDefault();
